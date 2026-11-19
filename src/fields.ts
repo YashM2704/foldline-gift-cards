@@ -27,7 +27,7 @@ export const fields = {
   redeemUrl: prop.link({ label: "Redeem link", required: true, description: "The button, and the QR code on the printed card." }),
   balanceUrl: prop.link({ label: "Balance page link" }),
   printUrl: prop.link({ label: "Printable card link", description: "Where the PDF is: the email and the page link to it." }),
-  cardImageUrl: prop.link({ label: "Card image URL", description: "Where the shop hosts this gift's card image; the email shows it. Rendered locally it's card.png beside the email." }),
+  cardImageUrl: prop.link({ label: "Card image URL", description: "Where the shop hosts this gift's card image; the email shows it. Rendered locally it's card-drop.png beside the email." }),
   balance: prop.number({ label: "Balance", min: 0, max: 100000, description: "What's left on the card (the balance page). Defaults to the amount." }),
   history: prop.list(
     prop.object(
@@ -40,7 +40,8 @@ export const fields = {
     ),
     { label: "History", max: 20 },
   ),
-  barcode: prop.text({ label: "In-store barcode", maxLength: 40, pattern: "^[\\u0020-\\u007E]*$", description: "A Code 128 value. The page shows a barcode only when it's set." }),
+  barcode: prop.text({ label: "In-store code", maxLength: 40, pattern: "^[\\u0020-\\u007E]*$", description: "What the shop's till scans. The balance page shows it as a QR code, only when it's set." }),
+  asOf: prop.date({ label: "As of", description: "The day the balance page is drawn for: after the expiry date it shows the card as expired. A template never reads the clock." }),
   showAmount: prop.boolean({ label: "Show the amount", default: true, guidance: "Off hides the value on the card, the share images, the email and the printed card. The balance page always shows the balance." }),
   shopName: prop.text({ label: "Shop name", default: FOLDLINE.name, maxLength: 40, pattern: PRINTABLE }),
   shopUrl: prop.link({ label: "Shop website", default: FOLDLINE.url }),

@@ -80,14 +80,27 @@ export function wrap(text: string, face: Face, size: number, width: number): str
   return lines;
 }
 
-/** The largest size in `sizes` at which text wraps into at most maxLines with every line fitting; null if none. */
+/** A widow: one word alone on the last line of a paragraph of several. */
+export const isWidow = (lines: string[]) => lines.length > 1 && !/\s/.test(lines[lines.length - 1].trim());
+
+/**
+ * The largest size in `sizes` at which text wraps into at most maxLines with every line fitting; null if none.
+ * It prefers a size that leaves no widow; only if every size would is one taken.
+ */
 export function fitWrapped(text: string, face: Face, width: number, sizes: number[], maxLines: number) {
+  let fallback: { size: number; lines: string[] } | null = null;
   for (const size of sizes) {
     const lines = wrap(text, face, size, width);
-    if (lines.length <= maxLines && lines.every((l) => measure(l, face, size) <= width)) return { size, lines };
+    if (lines.length > maxLines || lines.some((l) => measure(l, face, size) > width)) continue;
+    if (!isWidow(lines)) return { size, lines };
+    fallback ??= { size, lines };
   }
-  return null;
+  return fallback;
 }
+
+/** The first of several measured layouts that leaves no widow, else the first of them; null if there are none. */
+export const preferNoWidow = <T extends { lines: string[] }>(layouts: Array<T | null>): T | null =>
+  layouts.find((l): l is T => !!l && !isWidow(l.lines)) ?? layouts.find((l): l is T => !!l) ?? null;
 
 // ---------- the rules a value must meet ----------
 

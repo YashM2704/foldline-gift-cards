@@ -112,7 +112,7 @@ export function Card(p: CardProps) {
       {/* the words */}
       <Column style={{ width: px(CW), height: px(CH), padding: [px(mt + 44), px(mr + 52), px(mb + 40), px(ml + 52)], justifyContent: "space-between", color: o.ink }}>
         <Column style={{ gap: px(10) }}>
-          <Row style={{ gap: px(12), alignItems: "center" }}>
+          <Row stackOnMobile={false} style={{ gap: px(12), alignItems: "center" }}>
             {/* the folded mark is Foldline's: another shop's wordmark stands alone */}
             {shop === FOLDLINE.name && <Mark color={o.ink} fold={mix(o.ink, o.ground, 0.55)} size={px(30)} />}
             <Text style={{ flex: "none", fontFamily: "Fraunces", fontSize: px(shopSize), fontWeight: 600, letterSpacing: px(-0.5), lineHeight: 1 }}>

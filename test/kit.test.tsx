@@ -73,3 +73,82 @@ test("wrapping breaks only at spaces and after hyphens, and keeps one-letter wor
   assert.ok(!lines.some((l) => / [wzioua]$/i.test(l)), "no line ends with a one-letter word");
   assert.deepEqual(wrap("Anastasia Papadopoulou-Whitfield", "fraunces-400i", 40, 480), ["Anastasia", "Papadopoulou-Whitfield"]);
 });
+
+// ---------- the four Phase 4 templates ----------
+import { render as renderHtml } from "@hyper-elements/react";
+import share, { layout as shareLayout } from "../src/templates/share";
+import fold from "../src/templates/fold";
+import emailTemplate from "../src/templates/email";
+import pageTemplate from "../src/templates/page";
+import type { Template } from "@hyper-elements/react/template";
+
+const snap = (t: Template<any, any>, v: unknown, format?: string) => {
+  const r = t.check(v, format ? { format } : undefined);
+  assert.equal(r.valid, true, r.diagnostics.map((d) => d.message).join("; "));
+  return (r.snapshots as Record<string, unknown>)[format ?? "default"] as never;
+};
+
+test("every template checks its example in every format, and renders it without errors", async () => {
+  for (const format of ["square", "story"]) assert.deepEqual(errors((await renderImage(snap(share, example, format), { fonts, strict: true })).diagnostics), []);
+  for (const format of ["a4", "letter"]) {
+    const pdf = await renderPdf(snap(fold, example, format), { fonts });
+    assert.deepEqual(errors(pdf.diagnostics), [], format);
+    assert.equal(new TextDecoder().decode(pdf.pdf.slice(0, 5)), "%PDF-");
+  }
+  assert.deepEqual(errors((await renderHtml(snap(emailTemplate, example))).diagnostics), []);
+  assert.deepEqual(errors((await renderHtml(snap(pageTemplate, example))).diagnostics), []);
+});
+
+test("showAmount off: the email carries the value nowhere — preheader, alt text, details, plain text", async () => {
+  const hidden = { ...example, amount: 2500, showAmount: false };
+  const r = await renderHtml(snap(emailTemplate, hidden));
+  for (const s of ["₹2,500", "2,500", "₹"]) {
+    assert.ok(!r.html.includes(s), `html shows ${s}`);
+    assert.ok(!r.text.includes(s), `text shows ${s}`);
+  }
+  assert.match(r.html, /Arjun sent you a gift card\. Your code is inside\./);
+  const shown = await renderHtml(snap(emailTemplate, example));
+  assert.match(shown.html, /₹2,500 Foldline gift card for Priya/);
+});
+
+test("the balance page: spent hides Redeem, expired hides the code, an empty history says so", async () => {
+  const html = async (v: object) => (await renderHtml(snap(pageTemplate, { ...example, ...v }))).html;
+  const spent = await html({ balance: 0 });
+  assert.ok(!spent.includes("Redeem online") && spent.includes("All spent"));
+  const expired = await html({ asOf: "2028-01-01" });
+  assert.ok(!expired.includes(example.code) && expired.includes("Expired on 18 Nov 2027"));
+  assert.match(await html({}), /No purchases yet/);
+  assert.match(await html({ balance: 800 }), /₹800 left/);
+});
+
+test("share images: a note that can't fit even beside the smallest card is refused, not cut", () => {
+  assert.ok(shareLayout({ from: "Arjun", message: "W".repeat(240) }, "square") === null);
+  const long = "Happy birthday, Priya! I couldn't choose between the green fountain pen and the notebook with the gold edges, so now you don't have to either. Get both, or neither, or something I'd never think of. See you on Saturday for cake, I promise.";
+  const l = shareLayout({ from: "Arjun", message: long }, "square");
+  assert.ok(l?.note && l.note.lines.join(" ").replace(/ /g, " ") === long.replace(/'/g, "’"), "the whole note, typeset");
+});
+
+test("share images: the column is the card's width and centred, and the note stays comfortable while the card can shrink", () => {
+  const l = shareLayout({ from: "Meera", message: "Light every lamp this year. Something for the new diary, with love." }, "square");
+  assert.ok(l && l.note);
+  assert.equal(l.left * 2 + l.width, 1080, "centred, whole pixels");
+  assert.ok(l.note.size >= 36, `note at ${l.note.size}px`);
+  const story = shareLayout({ from: "Arjun", message: "Happy birthday! Get yourself that fountain pen you keep looking at." }, "story");
+  assert.ok(story?.note && story.note.size >= 40, "the story's note is larger");
+});
+
+test("email: with the value hidden and no balance page, it says only what's true", async () => {
+  const r = await renderHtml(snap(emailTemplate, { ...example, showAmount: false, balanceUrl: undefined }));
+  assert.ok(!r.html.includes("On your card"));
+  assert.match(r.html, /Shown when you redeem/);
+  assert.match(r.html, /card-drop\.png/, "the email embeds the drop export, which lines up with its column");
+  assert.match(r.html, /lang="en"/);
+});
+
+test("the balance page: nothing spent yet says so, and a spent card offers nothing to print", async () => {
+  const full = (await renderHtml(snap(pageTemplate, { ...example, balance: 2500 }))).html;
+  assert.match(full, /Nothing spent yet/);
+  assert.ok(!full.includes("of ₹2,500"));
+  const spent = (await renderHtml(snap(pageTemplate, { ...example, balance: 0 }))).html;
+  assert.ok(!spent.includes("Print it as a card"));
+});

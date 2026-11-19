@@ -14,7 +14,8 @@
     "describe": "hyper-elements describe src/templates/card-image.tsx",
     "test": "tsx --test test/kit.test.tsx",
     "typecheck": "tsc --noEmit",
-    "metrics": "tsx scripts/metrics.ts"
+    "metrics": "tsx scripts/metrics.ts",
+    "screenshots": "tsx scripts/screenshots.ts"
   },
   "hyperElements": {
     "templates": [
@@ -25,6 +26,7 @@
     "@hyper-elements/react": "^0.5.0",
     "@react-pdf/renderer": "^4.9.0",
     "@resvg/resvg-js": "^2.6.2",
+    "qrcode-generator": "^2.0.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "satori": "^0.33.5"
@@ -36,6 +38,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "opentype.js": "^2.0.0",
+    "playwright-core": "^1.65.1",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },

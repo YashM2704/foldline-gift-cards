@@ -9,5 +9,7 @@
   "code": "J5TB-3C4V-SE9N",
   "expires": "2027-06-30",
   "redeemUrl": "https://foldline.example/redeem?code=J5TB-3C4V-SE9N",
-  "showAmount": false
+  "showAmount": false,
+  "balanceUrl": "https://foldline.example/balance/J5TB-3C4V-SE9N",
+  "printUrl": "https://foldline.example/gift/J5TB-3C4V-SE9N/card.pdf"
 }

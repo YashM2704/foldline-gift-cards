@@ -43,7 +43,7 @@ export const COMPOSE: Record<Occasion, (p: Palette, o?: ComposeOptions) => Shape
       ...place(confetti(p.a), 920, 232, 0.9),
       ...place(confetti(p.b), 600, 318, 0.8),
       ...place(confetti(p.a), 960, 300, 0.7),
-      ...(o?.cover ? [...pin([592, s.yAt(592)], p.c), ...pin(s.at(1), p.c)] : []),
+      ...(o?.cover ? [...pin([612, s.yAt(612)], p.c), ...pin(s.at(1), p.c)] : []),
     ];
   },
   thanks: (p) => [
@@ -64,9 +64,10 @@ export const COMPOSE: Record<Occasion, (p: Palette, o?: ComposeOptions) => Shape
       ...hang(910, 0.95, p.a),
       ...place(star(p.c), 900, 420, 1.1),
       ...place(star(p.b), 610, 470, 0.75),
-      ...place(star(p.c), 960, 552, 0.6),
-      // on the cover the string is pinned at both of its visible ends
-      ...(o?.cover ? [...pin([592, s.yAt(592)], p.c), ...pin([1000, s.yAt(1000)], p.c)] : []),
+      // the cover's window ends above the card's bottom: its lowest star would be cut there, so it stays off
+      ...(o?.cover ? [] : place(star(p.c), 960, 552, 0.6)),
+      // on the cover the string is pinned at both of its visible ends, clear of the window's edges
+      ...(o?.cover ? [...pin([612, s.yAt(612)], p.c), ...pin([988, s.yAt(988)], p.c)] : []),
     ];
   },
   congrats: (p) => [

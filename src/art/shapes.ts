@@ -28,6 +28,22 @@ export const luminance = (c: string) => {
 };
 export const isDark = (c: string) => luminance(c) < 0.4;
 
+/** The colour's own hue at a set lightness (0…1): a pale tint that stays violet or peach, where mixing toward paper
+ *  would turn a dark ground grey. */
+export function pale(c: string, lightness: number): string {
+  const [r, g, b] = hex(c).map((v) => v / 255);
+  const [max, min] = [Math.max(r, g, b), Math.min(r, g, b)];
+  const l = (max + min) / 2;
+  const d = max - min;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  const h = d === 0 ? 0 : max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  const c2 = (1 - Math.abs(2 * lightness - 1)) * Math.min(s, 0.75);
+  const x = c2 * (1 - Math.abs((h % 2) - 1));
+  const m = lightness - c2 / 2;
+  const [r2, g2, b2] = h < 1 ? [c2, x, 0] : h < 2 ? [x, c2, 0] : h < 3 ? [0, c2, x] : h < 4 ? [0, x, c2] : h < 5 ? [x, 0, c2] : [c2, 0, x];
+  return "#" + [r2, g2, b2].map((v) => Math.round((v + m) * 255).toString(16).padStart(2, "0")).join("");
+}
+
 /** Shapes from a local box, moved to (x, y) and scaled by s. */
 export const place = (shapes: Shape[], x: number, y: number, s = 1): Shape[] =>
   shapes.map((sh) => {

@@ -8,5 +8,7 @@
   "message": "Congratulations on the new job! Stock the new desk with something nice.",
   "code": "C0NG-R4TS-5AM7",
   "expires": "2027-12-31",
-  "redeemUrl": "https://foldline.example/redeem?code=C0NG-R4TS-5AM7"
+  "redeemUrl": "https://foldline.example/redeem?code=C0NG-R4TS-5AM7",
+  "balanceUrl": "https://foldline.example/balance/C0NG-R4TS-5AM7",
+  "printUrl": "https://foldline.example/gift/C0NG-R4TS-5AM7/card.pdf"
 }

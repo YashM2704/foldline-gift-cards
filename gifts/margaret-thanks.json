@@ -8,5 +8,7 @@
   "message": "Thank you for looking after the garden all summer. The tomatoes have never been happier.",
   "code": "T9GR-6M3B-KX2P",
   "expires": "2027-09-01",
-  "redeemUrl": "https://foldline.example/redeem?code=T9GR-6M3B-KX2P"
+  "redeemUrl": "https://foldline.example/redeem?code=T9GR-6M3B-KX2P",
+  "balanceUrl": "https://foldline.example/balance/T9GR-6M3B-KX2P",
+  "printUrl": "https://foldline.example/gift/T9GR-6M3B-KX2P/card.pdf"
 }

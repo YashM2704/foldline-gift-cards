@@ -1,8 +1,9 @@
 /**
  * Foldline gift card — the card face as an image: what the email shows, and the card on its own.
  *
- * Three formats, by where the image goes: `even` (shadow all round), `flush` (no room left or top, so it lines up
- * with an email's text) and `drop` (shadow straight down, the image exactly the card's width, for share images).
+ * Three formats, by where the image goes: `even` (shadow all round, the card on its own), `flush` (no shadow room
+ * left or top) and `drop` (shadow straight down, the image exactly the card's width: the email embeds this one, so
+ * the card lines up with the column on both edges).
  */
 import { Canvas } from "@hyper-elements/react";
 import { template } from "@hyper-elements/react/template";
