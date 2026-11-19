@@ -152,3 +152,55 @@ test("the balance page: nothing spent yet says so, and a spent card offers nothi
   const spent = (await renderHtml(snap(pageTemplate, { ...example, balance: 0 }))).html;
   assert.ok(!spent.includes("Print it as a card"));
 });
+
+// ---------- the edge-case matrix: hard gifts through every template, every format ----------
+import cardImageT from "../src/templates/card-image";
+import { problems as giftProblems } from "../src/fields";
+
+const LONG_NOTE = "Happy birthday, Priya! I couldn't choose between the green fountain pen and the notebook with the gold edges, so now you don't have to either. Get both, or neither, or something I'd never think of. See you on Saturday for cake, I promise.";
+const MATRIX: Array<[string, Record<string, unknown>]> = [
+  ["birthday, ₹ max, long names", { occasion: "birthday", amount: 100000, currency: "INR", locale: "en-IN", to: "Anastasia Papadopoulou-Whitfield", from: "MAXIMILIAN WOJCIECHOWSKI" }],
+  ["thanks, £ max, value hidden", { occasion: "thanks", amount: 100000, currency: "GBP", locale: "en-GB", showAmount: false }],
+  ["festive, € max (de-DE), long note", { occasion: "festive", amount: 100000, currency: "EUR", locale: "de-DE", message: LONG_NOTE }],
+  ["congrats, $ max (Letter), no note", { occasion: "congrats", amount: 100000, currency: "USD", locale: "en-US", message: undefined }],
+  ["justBecause, Hindi names and note", { occasion: "justBecause", to: "प्रिया", from: "अर्जुन", message: "जन्मदिन मुबारक! Get yourself that pen." }],
+  ["birthday, Polish note, hidden", { occasion: "birthday", currency: "EUR", locale: "de-DE", to: "Łukasz", from: "Ania", message: "Wszystkiego najlepszego! Kup sobie ten zeszyt w kratkę, o którym mówiłeś od miesięcy.", showAmount: false }],
+  ["thanks, Turkish and Romanian", { occasion: "thanks", to: "Şükrü Gülşen", from: "Ștefan Țăranu", currency: "EUR", locale: "en-GB" }],
+  ["festive, spent, 20 history rows", { occasion: "festive", balance: 0, history: Array.from({ length: 20 }, (_, i) => ({ date: `2026-10-${String(i + 1).padStart(2, "0")}`, label: `Order #${1000 + i}`, amount: -125 })) }],
+  ["congrats, expired, in-store code", { occasion: "congrats", asOf: "2028-02-01", barcode: "FOLD-K7QP2M9X4TRA" }],
+  ["justBecause, amount 1, other shop", { occasion: "justBecause", amount: 1, shopName: "Marigold Paper and Press", shopUrl: "https://marigold.example", supportEmail: "help@marigold.example" }],
+  ["birthday, all caps note", { occasion: "birthday", message: "HAPPY BIRTHDAY! I COULDN'T CHOOSE BETWEEN THE GREEN FOUNTAIN PEN AND THE NOTEBOOK WITH THE GOLD EDGES, SO NOW YOU DON'T HAVE TO EITHER. SEE YOU ON SATURDAY!" }],
+  ["thanks, nothing spent, no links", { occasion: "thanks", balance: 2500, balanceUrl: undefined, printUrl: undefined }],
+];
+
+test("edge-case matrix: twelve hard gifts render through every template and format without errors", async () => {
+  for (const [name, patch] of MATRIX) {
+    const v = { ...example, ...patch } as Record<string, unknown>;
+    assert.deepEqual(giftProblems(v as never), [], `${name}: problems`);
+    const pngs: Array<[Template<any, any>, string]> = [[cardImageT, "even"], [cardImageT, "flush"], [cardImageT, "drop"], [share, "square"], [share, "story"]];
+    for (const [t, format] of pngs) {
+      const r = await renderImage(snap(t, v, format), { fonts, strict: true });
+      assert.deepEqual(errors(r.diagnostics), [], `${name}: ${t.id} ${format}`);
+    }
+    const pdf = await renderPdf(snap(fold, v, v.locale === "en-US" ? "letter" : "a4"), { fonts });
+    assert.deepEqual(errors(pdf.diagnostics), [], `${name}: pdf`);
+    for (const t of [emailTemplate, pageTemplate]) assert.deepEqual(errors((await renderHtml(snap(t, v))).diagnostics), [], `${name}: ${t.id}`);
+  }
+});
+
+// ---------- accessibility: every text colour against its ground meets WCAG AA (4.5:1) ----------
+import { mix as mixColour } from "../src/art/shapes";
+import { INK, PAPER, QUIET, WHITE } from "../src/brand";
+
+test("contrast: every text and ground pair the kit draws is at least 4.5:1 (WCAG AA)", () => {
+  const lin = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  const lum = (c: string) => { const [r, g, b] = lin(c); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const ratio = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const pairs: Array<[string, string, string]> = [
+    ["body text on paper", INK, PAPER], ["quiet text on paper", QUIET, PAPER], ["quiet labels on white", QUIET, WHITE], ["button text", PAPER, INK],
+    ...OCCASIONS_LIST.map((k): [string, string, string] => [`card text, ${k}`, OCCASIONS[k].ink, OCCASIONS[k].ground]),
+    ...OCCASIONS_LIST.filter((k) => lum(OCCASIONS[k].ground) >= 0.18).map((k): [string, string, string] => [`share headline on ${k}`, PAPER, OCCASIONS[k].ink]),
+  ];
+  for (const [name, fg, bg] of pairs) assert.ok(ratio(fg, bg) >= 4.5, `${name}: ${ratio(fg, bg).toFixed(2)}:1`);
+  assert.ok(ratio(mixColour(PAPER, INK, 0.45), INK) >= 3, "the share footer's dot (decorative, large-text rule)");
+});
