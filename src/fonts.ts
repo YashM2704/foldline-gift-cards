@@ -53,8 +53,10 @@ export async function loadFonts(): Promise<Array<Omit<Face, "src"> & { src: Uint
       try {
         await access(path);
       } catch {
-        const res = await fetch(face.src);
-        if (!res.ok) throw new Error(`Couldn't fetch ${face.family} ${face.weight} ${face.style} (${res.status}): ${face.src}`);
+        const res = await fetch(face.src).catch(() => {
+          throw new Error(`The fonts download once from fonts.gstatic.com on the first run, and ${face.family} couldn't be fetched: check the internet connection and run again.`);
+        });
+        if (!res.ok) throw new Error(`Couldn't fetch ${face.family} ${face.weight} ${face.style} from fonts.gstatic.com (${res.status}): ${face.src}`);
         await writeFile(path, new Uint8Array(await res.arrayBuffer()));
       }
       return { family: face.family, weight: face.weight, style: face.style, src: await readFile(path) };

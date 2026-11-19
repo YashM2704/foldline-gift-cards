@@ -69,7 +69,10 @@ if (unknown.length) {
   process.exit(1);
 }
 const gifts = asked.length ? asked : all;
-const fonts = await loadFonts();
+const fonts = await loadFonts().catch((e: Error) => {
+  console.log(e.message);
+  process.exit(1);
+});
 const failed: string[] = [];
 const warnings = (d: Diagnostic[]) => d.filter((x) => x.severity !== "info");
 
