@@ -156,8 +156,8 @@ export default template({
         </Section>
 
         <Section style={{ padding: [24, 32, 40, 32], gap: 6, border: { top: `1px solid ${RULE}` }, mobile: { padding: [20, 20, 32, 20] } }}>
-          <Text style={{ fontSize: 13, color: QUIET }}>{shop.name} · <Link href={shop.url}>{shop.host}</Link> · <Link href={`mailto:${shop.supportEmail}`}>{shop.supportEmail}</Link></Text>
-          <Text style={{ fontSize: 12, color: QUIET }}>{shop.terms}</Text>
+          <Text style={{ fontSize: 14, color: QUIET }}>{shop.name} · <Link href={shop.url}>{shop.host}</Link> · <Link href={`mailto:${shop.supportEmail}`}>{shop.supportEmail}</Link></Text>
+          <Text style={{ fontSize: 13, color: QUIET }}>{shop.terms}</Text>
         </Section>
       </Page>
     );

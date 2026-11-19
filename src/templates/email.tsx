@@ -63,7 +63,8 @@ export default template({
           )}
           <Column style={{ backgroundColor: WHITE, border: `1.5px dashed ${QUIET}`, borderRadius: 8, padding: [16, 20], gap: 4 }}>
             <Text style={{ apply: ["eyebrow"], color: QUIET }}>Your code</Text>
-            <Text style={{ fontFamily: STACK.mono, fontSize: 32, fontWeight: 600, letterSpacing: 4, lineHeight: 1.25, mobile: { fontSize: 24, letterSpacing: 2 } }}>{v.code}</Text>
+            {/* 26px fits a phone even where the email's phone styles don't apply (the Gmail app): 254px of the 268px left at 375px */}
+            <Text style={{ fontFamily: STACK.mono, fontSize: 26, fontWeight: 600, letterSpacing: 2, lineHeight: 1.25, mobile: { fontSize: 24 } }}>{v.code}</Text>
           </Column>
           <Button href={redeem}>Redeem your gift</Button>
           <List type="number" style={{ gap: 6 }}>
@@ -82,11 +83,11 @@ export default template({
         </Section>
         <Section style={{ padding: [0, 32, 40, 32] }}>
           <Column style={{ gap: 8, padding: [24, 0, 0, 0], border: { top: `1px solid ${RULE}` } }}>
-            <Text style={{ fontSize: 13, color: QUIET }}>
+            <Text style={{ fontSize: 14, color: QUIET }}>
               Sent by {shop.name} on behalf of {v.from}. Not expecting this? Write to <Link href={`mailto:${shop.supportEmail}`}>{shop.supportEmail}</Link>.
             </Text>
-            <Text style={{ fontSize: 12, color: QUIET }}>{shop.terms}</Text>
-            <Text style={{ fontSize: 12, color: QUIET }}><Link href={shop.url}>{shop.host}</Link></Text>
+            <Text style={{ fontSize: 13, color: QUIET }}>{shop.terms}</Text>
+            <Text style={{ fontSize: 13, color: QUIET }}><Link href={shop.url}>{shop.host}</Link></Text>
           </Column>
         </Section>
       </Email>
