@@ -1,0 +1,13 @@
+{
+  "occasion": "justBecause",
+  "amount": 150,
+  "currency": "EUR",
+  "locale": "de-DE",
+  "to": "Lena",
+  "from": "Jonas",
+  "message": "No reason at all. Treat yourself to something with paper in it.",
+  "code": "J5TB-3C4V-SE9N",
+  "expires": "2027-06-30",
+  "redeemUrl": "https://foldline.example/redeem?code=J5TB-3C4V-SE9N",
+  "showAmount": false
+}

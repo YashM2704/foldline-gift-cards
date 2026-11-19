@@ -1,0 +1,12 @@
+{
+  "occasion": "congrats",
+  "amount": 250,
+  "currency": "USD",
+  "locale": "en-US",
+  "to": "Sam",
+  "from": "Everyone at the studio",
+  "message": "Congratulations on the new job! Stock the new desk with something nice.",
+  "code": "C0NG-R4TS-5AM7",
+  "expires": "2027-12-31",
+  "redeemUrl": "https://foldline.example/redeem?code=C0NG-R4TS-5AM7"
+}

@@ -1,0 +1,12 @@
+{
+  "occasion": "festive",
+  "amount": 5000,
+  "currency": "INR",
+  "locale": "en-IN",
+  "to": "Ananya",
+  "from": "Meera",
+  "message": "Light every lamp this year. Something for the new diary, with love.",
+  "code": "D4WN-8H2C-QV7E",
+  "expires": "2027-10-20",
+  "redeemUrl": "https://foldline.example/redeem?code=D4WN-8H2C-QV7E"
+}

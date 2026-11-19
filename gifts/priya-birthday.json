@@ -1,0 +1,19 @@
+{
+  "occasion": "birthday",
+  "amount": 2500,
+  "currency": "INR",
+  "locale": "en-IN",
+  "to": "Priya",
+  "from": "Arjun",
+  "message": "Happy birthday! Get yourself that fountain pen you keep looking at.",
+  "code": "K7QP-2M9X-4TRA",
+  "expires": "2027-11-18",
+  "redeemUrl": "https://foldline.example/redeem?code=K7QP-2M9X-4TRA",
+  "balanceUrl": "https://foldline.example/balance/K7QP-2M9X-4TRA",
+  "printUrl": "https://foldline.example/gift/K7QP-2M9X-4TRA/card.pdf",
+  "balance": 800,
+  "history": [
+    { "date": "2026-11-09", "label": "Order #1042", "amount": -1700 },
+    { "date": "2026-11-02", "label": "Gift card from Arjun", "amount": 2500 }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "occasion": "thanks",
+  "amount": 40,
+  "currency": "GBP",
+  "locale": "en-GB",
+  "to": "Margaret",
+  "from": "the Okafor family",
+  "message": "Thank you for looking after the garden all summer. The tomatoes have never been happier.",
+  "code": "T9GR-6M3B-KX2P",
+  "expires": "2027-09-01",
+  "redeemUrl": "https://foldline.example/redeem?code=T9GR-6M3B-KX2P"
+}
