@@ -1,5 +1,5 @@
 /**
- * A gift's fields: what a shop (or an agent) fills in, each with its rules. Every template in the kit takes the
+ * A gift's fields: what a shop (or a tool working for one) fills in, each with its rules. Every template in the kit takes the
  * same fields, so one gift's values make the whole set: its card image, email, page, printable card and shares.
  */
 import { prop } from "@hyper-elements/react";

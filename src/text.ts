@@ -17,7 +17,7 @@ const DEVA = /[ऀ-ॿ‌‍]/;
 
 /** Latin, Latin-1, Latin Extended-A (and Romanian ș ț), Devanagari and typographic punctuation: what the fonts draw. */
 const CHARS = "\\n\\u0020-\\u007E\\u00A0-\\u017F\\u0218-\\u021B\\u0900-\\u097F\\u200C\\u200D\\u2010-\\u2014\\u2018\\u2019\\u201C\\u201D\\u2026";
-/** As a field's `pattern` (a regular expression's source, matched with `u`), for tools and agents filling the template. */
+/** As a field's `pattern` (a regular expression's source, matched with `u`), for tools that fill the template. */
 export const PRINTABLE = `^[${CHARS}]*$`;
 const PRINTABLE_CHAR = new RegExp(`^[${CHARS}]$`, "u");
 

@@ -10,9 +10,15 @@ import { renderPdf } from "@hyper-elements/react/pdf";
 import { example, problems } from "../src/fields";
 import { FONTS, loadFonts } from "../src/fonts";
 import { Card, layoutWords } from "../src/parts/Card";
-import { OCCASIONS, OCCASIONS_LIST } from "../src/brand";
+import { INK, OCCASIONS, OCCASIONS_LIST, PAPER, QUIET, WHITE } from "../src/brand";
 import { CARD_COLUMN, measure, money, nameProblem, wrap } from "../src/text";
+import { mix } from "../src/art/shapes";
+import type { Template } from "@hyper-elements/react/template";
 import cardImage from "../src/templates/card-image";
+import emailTemplate from "../src/templates/email";
+import fold from "../src/templates/fold";
+import pageTemplate from "../src/templates/page";
+import share, { layout as shareLayout } from "../src/templates/share";
 
 const fonts = await loadFonts();
 const errors = (d: Array<{ severity: string; code: string }>) => d.filter((x) => x.severity === "error").map((x) => x.code);
@@ -74,13 +80,7 @@ test("wrapping breaks only at spaces and after hyphens, and keeps one-letter wor
   assert.deepEqual(wrap("Anastasia Papadopoulou-Whitfield", "fraunces-400i", 40, 480), ["Anastasia", "Papadopoulou-Whitfield"]);
 });
 
-// ---------- the four Phase 4 templates ----------
-import { render as renderHtml } from "@hyper-elements/react";
-import share, { layout as shareLayout } from "../src/templates/share";
-import fold from "../src/templates/fold";
-import emailTemplate from "../src/templates/email";
-import pageTemplate from "../src/templates/page";
-import type { Template } from "@hyper-elements/react/template";
+// ---------- the share images, the fold-in card, the email and the balance page ----------
 
 const snap = (t: Template<any, any>, v: unknown, format?: string) => {
   const r = t.check(v, format ? { format } : undefined);
@@ -95,24 +95,24 @@ test("every template checks its example in every format, and renders it without 
     assert.deepEqual(errors(pdf.diagnostics), [], format);
     assert.equal(new TextDecoder().decode(pdf.pdf.slice(0, 5)), "%PDF-");
   }
-  assert.deepEqual(errors((await renderHtml(snap(emailTemplate, example))).diagnostics), []);
-  assert.deepEqual(errors((await renderHtml(snap(pageTemplate, example))).diagnostics), []);
+  assert.deepEqual(errors((await render(snap(emailTemplate, example))).diagnostics), []);
+  assert.deepEqual(errors((await render(snap(pageTemplate, example))).diagnostics), []);
 });
 
 test("showAmount off: the email carries the value nowhere — preheader, alt text, details, plain text", async () => {
   const hidden = { ...example, amount: 2500, showAmount: false };
-  const r = await renderHtml(snap(emailTemplate, hidden));
+  const r = await render(snap(emailTemplate, hidden));
   for (const s of ["₹2,500", "2,500", "₹"]) {
     assert.ok(!r.html.includes(s), `html shows ${s}`);
     assert.ok(!r.text.includes(s), `text shows ${s}`);
   }
   assert.match(r.html, /Arjun sent you a gift card\. Your code is inside\./);
-  const shown = await renderHtml(snap(emailTemplate, example));
+  const shown = await render(snap(emailTemplate, example));
   assert.match(shown.html, /₹2,500 Foldline gift card for Priya/);
 });
 
 test("the balance page: spent hides Redeem, expired hides the code, an empty history says so", async () => {
-  const html = async (v: object) => (await renderHtml(snap(pageTemplate, { ...example, ...v }))).html;
+  const html = async (v: object) => (await render(snap(pageTemplate, { ...example, ...v }))).html;
   const spent = await html({ balance: 0 });
   assert.ok(!spent.includes("Redeem online") && spent.includes("All spent"));
   const expired = await html({ asOf: "2028-01-01" });
@@ -138,7 +138,7 @@ test("share images: the column is the card's width and centred, and the note sta
 });
 
 test("email: with the value hidden and no balance page, it says only what's true", async () => {
-  const r = await renderHtml(snap(emailTemplate, { ...example, showAmount: false, balanceUrl: undefined }));
+  const r = await render(snap(emailTemplate, { ...example, showAmount: false, balanceUrl: undefined }));
   assert.ok(!r.html.includes("On your card"));
   assert.match(r.html, /Shown when you redeem/);
   assert.match(r.html, /card-drop\.png/, "the email embeds the drop export, which lines up with its column");
@@ -146,16 +146,14 @@ test("email: with the value hidden and no balance page, it says only what's true
 });
 
 test("the balance page: nothing spent yet says so, and a spent card offers nothing to print", async () => {
-  const full = (await renderHtml(snap(pageTemplate, { ...example, balance: 2500 }))).html;
+  const full = (await render(snap(pageTemplate, { ...example, balance: 2500 }))).html;
   assert.match(full, /Nothing spent yet/);
   assert.ok(!full.includes("of ₹2,500"));
-  const spent = (await renderHtml(snap(pageTemplate, { ...example, balance: 0 }))).html;
+  const spent = (await render(snap(pageTemplate, { ...example, balance: 0 }))).html;
   assert.ok(!spent.includes("Print it as a card"));
 });
 
 // ---------- the edge-case matrix: hard gifts through every template, every format ----------
-import cardImageT from "../src/templates/card-image";
-import { problems as giftProblems } from "../src/fields";
 
 const LONG_NOTE = "Happy birthday, Priya! I couldn't choose between the green fountain pen and the notebook with the gold edges, so now you don't have to either. Get both, or neither, or something I'd never think of. See you on Saturday for cake, I promise.";
 const MATRIX: Array<[string, Record<string, unknown>]> = [
@@ -176,21 +174,19 @@ const MATRIX: Array<[string, Record<string, unknown>]> = [
 test("edge-case matrix: twelve hard gifts render through every template and format without errors", async () => {
   for (const [name, patch] of MATRIX) {
     const v = { ...example, ...patch } as Record<string, unknown>;
-    assert.deepEqual(giftProblems(v as never), [], `${name}: problems`);
-    const pngs: Array<[Template<any, any>, string]> = [[cardImageT, "even"], [cardImageT, "flush"], [cardImageT, "drop"], [share, "square"], [share, "story"]];
+    assert.deepEqual(problems(v as never), [], `${name}: problems`);
+    const pngs: Array<[Template<any, any>, string]> = [[cardImage, "even"], [cardImage, "flush"], [cardImage, "drop"], [share, "square"], [share, "story"]];
     for (const [t, format] of pngs) {
       const r = await renderImage(snap(t, v, format), { fonts, strict: true });
       assert.deepEqual(errors(r.diagnostics), [], `${name}: ${t.id} ${format}`);
     }
     const pdf = await renderPdf(snap(fold, v, v.locale === "en-US" ? "letter" : "a4"), { fonts });
     assert.deepEqual(errors(pdf.diagnostics), [], `${name}: pdf`);
-    for (const t of [emailTemplate, pageTemplate]) assert.deepEqual(errors((await renderHtml(snap(t, v))).diagnostics), [], `${name}: ${t.id}`);
+    for (const t of [emailTemplate, pageTemplate]) assert.deepEqual(errors((await render(snap(t, v))).diagnostics), [], `${name}: ${t.id}`);
   }
 });
 
 // ---------- accessibility: every text colour against its ground meets WCAG AA (4.5:1) ----------
-import { mix as mixColour } from "../src/art/shapes";
-import { INK, PAPER, QUIET, WHITE } from "../src/brand";
 
 test("contrast: every text and ground pair the kit draws is at least 4.5:1 (WCAG AA)", () => {
   const lin = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
@@ -202,5 +198,5 @@ test("contrast: every text and ground pair the kit draws is at least 4.5:1 (WCAG
     ...OCCASIONS_LIST.filter((k) => lum(OCCASIONS[k].ground) >= 0.18).map((k): [string, string, string] => [`share headline on ${k}`, PAPER, OCCASIONS[k].ink]),
   ];
   for (const [name, fg, bg] of pairs) assert.ok(ratio(fg, bg) >= 4.5, `${name}: ${ratio(fg, bg).toFixed(2)}:1`);
-  assert.ok(ratio(mixColour(PAPER, INK, 0.45), INK) >= 3, "the share footer's dot (decorative, large-text rule)");
+  assert.ok(ratio(mix(PAPER, INK, 0.45), INK) >= 3, "the share footer's dot (decorative, large-text rule)");
 });

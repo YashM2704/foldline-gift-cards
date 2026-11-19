@@ -103,7 +103,7 @@ The templates use template formats for sizes: `even`, `flush` and `drop` for the
 
 ### Every root, one card
 
-The card is one component ([`src/parts/Card.tsx`](src/parts/Card.tsx)) built from `Layer`, `Svg` shapes and a clipped `Column`. The same component is drawn by four roots:
+The card is one component ([`src/parts/Card.tsx`](src/parts/Card.tsx)) built from `Layer`, `Svg` shapes and a clipped `Column`. The same component is drawn by three roots, and the email embeds it as an image:
 
 - **`Canvas`** for the card image and share images, written with `renderImage()`. The email embeds the card image.
 - **`Page`** for the balance page, with the card's value hidden so the balance is the only number on the page.
@@ -125,7 +125,7 @@ Every size and line break on the card, the PDF and the share images is decided b
 
 - **Amounts:** `100.000 €`, `₹1,00,000` and `$100,000` all fit the card at the largest size that fits.
 - **Names:** a long name breaks after the greeting's comma.
-- **Notes:** a note takes the largest size from 44px down to 28px that fits. If it still doesn't fit, the card shrinks; a note is never cut.
+- **Notes:** a note takes the largest size that fits: from 44px down on the square share image, from 56px on the story, from 40px in the printed card. On the share images, if it still doesn't fit, the card shrinks; a note is never cut.
 - **Line breaks:** on images and PDFs the template sets every line break itself, at spaces only, because the renderer may break a line wherever the font changes, even mid-word. One-letter words stay with the next word, and widows are avoided.
 
 Each font weight is a single TrueType file from fonts.gstatic.com holding Latin, Latin Extended-A and ₹ together with its kerning. It goes in each root's `fonts` prop, as the official gallery's templates do, so a word never changes font file part-way. Hindi names and notes are set in Martel.
@@ -187,7 +187,7 @@ Open `card.pdf` and print it double-sided, flipped on the short edge, at actual 
 - with `showAmount` off, the email shows the value nowhere: not in the preheader, the alt text, the details or the plain text;
 - every text colour against its background meets WCAG AA contrast (4.5:1).
 
-The email was previewed in Outlook, Outlook.com, Gmail and Apple Mail, light and dark, with `hyper-elements preview`. The rendered files come out byte-identical on Windows and Linux and on Node 20, 22, 24 and 26.
+The email was previewed in Outlook, Outlook.com, Gmail and Apple Mail, light and dark, with `hyper-elements preview`. The rendered files come out byte-identical on Windows and Linux, and on Node 22, 24 and 26.
 
 ## Scripts
 
