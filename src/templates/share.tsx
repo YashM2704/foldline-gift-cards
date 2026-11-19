@@ -105,6 +105,13 @@ function Note({ width, height, size, lines, from, fromSize, pad, background }: {
   );
 }
 
+/** For galleries and tools that list designs, as the official gallery's files do. */
+export const meta = {
+  title: "Foldline gift card share image",
+  description: "“A gift from Arjun”: the card and the note as a square or story image, every line measured and fitted.",
+  root: "Canvas",
+};
+
 export default template({
   id: "foldline.GiftShare",
   version: "1.0.0",

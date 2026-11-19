@@ -18,6 +18,13 @@ import { money, smart } from "../text";
 
 const CONTENT = 536; // 600 less the 32px gutters
 
+/** For galleries and tools that list designs, as the official gallery's files do. */
+export const meta = {
+  title: "Foldline gift card email",
+  description: "The delivery email: the card, the note, the code as live text, Redeem, and the details.",
+  root: "Email",
+};
+
 export default template({
   id: "foldline.GiftEmail",
   version: "1.0.0",

@@ -33,6 +33,13 @@ function coverName(to: string, width: number) {
   return { size: fitSize(to, "fraunces-400i", width, 52, 24), lines: ["For", to] };
 }
 
+/** For galleries and tools that list designs, as the official gallery's files do. */
+export const meta = {
+  title: "Foldline fold-in gift card",
+  description: "Two pages to print double-sided and fold once into an A5 greeting card, the gift card and a QR code inside.",
+  root: "Document",
+};
+
 export default template({
   id: "foldline.GiftFoldCard",
   version: "1.0.0",

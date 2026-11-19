@@ -18,6 +18,13 @@ const formats = {
   drop: frameSize("drop"),
 } satisfies Record<Exclude<Frame, "none">, { width: number; height: number }>;
 
+/** For galleries and tools that list designs, as the official gallery's files do. */
+export const meta = {
+  title: "Foldline gift card image",
+  description: "A gift card's face as a PNG: origami art for the occasion, the greeting and the amount, the corner folded.",
+  root: "Canvas",
+};
+
 export default template({
   id: "foldline.GiftCardImage",
   version: "1.0.0",
@@ -34,7 +41,7 @@ export default template({
     assertPrintable(v);
     const size = formats[format];
     return (
-      <Canvas width={size.width} height={size.height} fonts={FONTS} lang={v.locale} title={`${OCCASIONS[v.occasion].greet}, ${v.to}`} style={{ backgroundColor: "transparent", fontFamily: "Instrument Sans" }}>
+      <Canvas width={size.width} height={size.height} fonts={FONTS} lang="en" title={`${OCCASIONS[v.occasion].greet}, ${v.to}`} style={{ backgroundColor: "transparent", fontFamily: "Instrument Sans" }}>
         <Card {...v} frame={format} />
       </Canvas>
     );

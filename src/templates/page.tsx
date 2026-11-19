@@ -19,6 +19,13 @@ import { money } from "../text";
 
 const DESKTOP_CARD = 440, PHONE_CARD = 336; // 336 fits a 375px phone's column; centred on wider ones
 
+/** For galleries and tools that list designs, as the official gallery's files do. */
+export const meta = {
+  title: "Foldline gift card balance page",
+  description: "What's left on a gift card, its code, its history and how to use it, with spent and expired states.",
+  root: "Page",
+};
+
 export default template({
   id: "foldline.GiftBalance",
   version: "1.0.0",
