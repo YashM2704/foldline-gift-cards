@@ -212,10 +212,10 @@ test("gallery: the one-file card renders cleanly, and draws exactly the card the
   const kit = await renderImage(snap(cardImage, example, "even"), { fonts, strict: true });
   const [a, b] = [PNG.sync.read(Buffer.from(gallery.image)), PNG.sync.read(Buffer.from(kit.image))];
   assert.deepEqual([a.width, a.height], [b.width, b.height]);
-  // the template's image is transparent around the card; the gallery's sits on paper: compare where the card is
+  // the template's image is transparent around the card; the gallery's sits on paper: compare every pixel of the card
   let differing = 0;
   for (let i = 0; i < b.data.length; i += 4) {
-    if (b.data[i + 3] === 255 && [0, 1, 2].some((k) => Math.abs(a.data[i + k] - b.data[i + k]) > 2)) differing++;
+    if (b.data[i + 3] === 255 && [0, 1, 2].some((k) => a.data[i + k] !== b.data[i + k])) differing++;
   }
   assert.equal(differing, 0, `${differing} pixels differ from the card-image template's`);
 });

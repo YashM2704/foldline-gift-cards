@@ -194,7 +194,7 @@ Open `card.pdf` and print it double-sided, flipped on the short edge, at actual 
 - every text colour against its background meets WCAG AA contrast (4.5:1);
 - the gallery's one-file card draws exactly the card the template draws.
 
-On every push, [GitHub Actions](.github/workflows/pages.yml) runs the type check, `hyper-elements check` and the tests on Linux, then builds the live preview from the source and publishes it.
+On every push to main, [GitHub Actions](.github/workflows/pages.yml) runs the type check, `hyper-elements check` and the tests on Linux, then builds the live preview from the source and publishes it.
 
 The email was previewed in Outlook, Outlook.com, Gmail and Apple Mail, light and dark, with `hyper-elements preview`. The rendered files come out byte-identical on Windows and Linux, and on Node 22, 24 and 26.
 
