@@ -5,6 +5,7 @@
  *   npm run render && npm run screenshots              every gift
  *   npm run screenshots -- priya-birthday              one gift
  */
+import { existsSync } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -34,7 +35,11 @@ const stop = (message: string): never => {
   process.exit(1);
 };
 
-const rendered = await readdir("out").catch(() => stop("Nothing to photograph yet: run `npm run render` first."));
+/** The folders in out/ that hold a rendered gift; anything else there (other tools' output) is left alone. */
+const rendered = (await readdir("out", { withFileTypes: true }).catch(() => []))
+  .filter((e) => e.isDirectory() && SHOTS.every((s) => existsSync(join("out", e.name, s.file))))
+  .map((e) => e.name);
+if (!rendered.length) stop("Nothing to photograph yet: run `npm run render` first.");
 const asked = process.argv.slice(2);
 const unknown = asked.filter((g) => !rendered.includes(g));
 if (unknown.length) stop(`No rendered gift called ${unknown.map((g) => `“${g}”`).join(", ")} in out/. Rendered: ${rendered.join(", ")}.`);
