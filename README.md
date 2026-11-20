@@ -133,7 +133,7 @@ Each font weight is a single TrueType file from fonts.gstatic.com holding Latin,
 ### The CLI
 
 ```bash
-npm run check      # hyper-elements check: all five templates, every format, with their examples
+npm run check      # hyper-elements check: all five templates, every format, with their examples, and the gallery file
 npm run describe   # hyper-elements describe: the card template's formats, fields, guidance and rules
 npx hyper-elements preview out/priya-birthday/email.html --findings   # the email in Outlook, Gmail, Apple Mail
 ```
@@ -173,19 +173,24 @@ The email shows the card image by `cardImageUrl`. Rendered locally, it points at
 
 Add a palette and greeting to `OCCASIONS` in [`src/brand.ts`](src/brand.ts), and a composition to [`src/art/compose.ts`](src/art/compose.ts) built from the pieces in [`src/art/pieces.ts`](src/art/pieces.ts). The art lives in the right 45% of the card and keeps clear of the text and the folded corner.
 
+### One file, in the gallery's shape
+
+[`gallery/foldline-gift-card.tsx`](gallery/foldline-gift-card.tsx) is Priya's birthday card as one self-contained file, the way the official gallery's templates are written: imports from `@hyper-elements/react` only, `export const meta`, a default export with no props, and its fonts from fonts.gstatic.com in the `Canvas`'s `fonts` prop. It carries the card's own pieces (the fold, the origami, the shadow) in about 230 lines, with the sizes the kit measured written in. A test checks that it draws the same card as the card-image template, pixel for pixel.
+
 ## Printing the card
 
 Open `card.pdf` and print it double-sided, flipped on the short edge, at actual size (100%), then fold it in half. Every sheet edge keeps 10 mm clear and the fold a 20 mm band, so nothing is lost to a home printer or wraps round the fold. Small ticks at the top and bottom mark the fold.
 
 ## Tested
 
-`npm test` runs 16 tests, among them:
+`npm test` runs 17 tests, among them:
 
 - every template's example in every format, rendered without errors;
 - the card in a `Canvas`, a `Page` and a `Document` for every occasion;
 - an edge-case matrix of twelve hard gifts through all nine outputs: the largest amounts in every currency, the longest names, a 238-character note and no note, Hindi, Polish, Turkish and Romanian, twenty history rows, spent and expired cards, and another shop;
 - with `showAmount` off, the email shows the value nowhere: not in the preheader, the alt text, the details or the plain text;
-- every text colour against its background meets WCAG AA contrast (4.5:1).
+- every text colour against its background meets WCAG AA contrast (4.5:1);
+- the gallery's one-file card draws exactly the card the template draws.
 
 The email was previewed in Outlook, Outlook.com, Gmail and Apple Mail, light and dark, with `hyper-elements preview`. The rendered files come out byte-identical on Windows and Linux, and on Node 22, 24 and 26.
 
@@ -195,7 +200,7 @@ The email was previewed in Outlook, Outlook.com, Gmail and Apple Mail, light and
 |---|---|
 | `npm run render` | Renders every gift in `gifts/` (or the ones named) into `out/` |
 | `npm test` | The tests |
-| `npm run check` | `hyper-elements check` on every template |
+| `npm run check` | `hyper-elements check` on every template and the gallery file |
 | `npm run describe` | `hyper-elements describe` for the card template |
 | `npm run typecheck` | TypeScript |
 | `npm run screenshots` | Screenshots of each email and balance page at desktop and phone widths (needs Chrome or Edge installed) |
@@ -214,6 +219,7 @@ src/
   brand.ts     Foldline's palette, the occasions, the email and page theme
   fonts.ts     the fonts (fonts.gstatic.com) and their cache
   format.ts    dates, short links, a gift's shop
+gallery/       foldline-gift-card.tsx                      the card in one file, as the official gallery's templates are
 gifts/         five example gifts
 scripts/       render · screenshots · docs · metrics
 test/          kit.test.tsx

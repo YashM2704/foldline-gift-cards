@@ -10,7 +10,7 @@
   },
   "scripts": {
     "render": "tsx scripts/render.ts",
-    "check": "hyper-elements check src/templates",
+    "check": "hyper-elements check src/templates gallery",
     "describe": "hyper-elements describe src/templates/card-image.tsx",
     "test": "tsx --test test/kit.test.tsx",
     "typecheck": "tsc --noEmit",

@@ -19,6 +19,8 @@ import emailTemplate from "../src/templates/email";
 import fold from "../src/templates/fold";
 import pageTemplate from "../src/templates/page";
 import share, { layout as shareLayout } from "../src/templates/share";
+import { PNG } from "pngjs";
+import GalleryCard from "../gallery/foldline-gift-card";
 
 const fonts = await loadFonts();
 const errors = (d: Array<{ severity: string; code: string }>) => d.filter((x) => x.severity === "error").map((x) => x.code);
@@ -199,4 +201,21 @@ test("contrast: every text and ground pair the kit draws is at least 4.5:1 (WCAG
   ];
   for (const [name, fg, bg] of pairs) assert.ok(ratio(fg, bg) >= 4.5, `${name}: ${ratio(fg, bg).toFixed(2)}:1`);
   assert.ok(ratio(mix(PAPER, INK, 0.45), INK) >= 3, "the share footer's dot (decorative, large-text rule)");
+});
+
+// ---------- the gallery's one-file card ----------
+
+test("gallery: the one-file card renders cleanly, and draws exactly the card the template does", async () => {
+  assert.deepEqual((await render(<GalleryCard />)).diagnostics, []);
+  const gallery = await renderImage(<GalleryCard />, { fonts, strict: true });
+  assert.deepEqual(gallery.diagnostics, []);
+  const kit = await renderImage(snap(cardImage, example, "even"), { fonts, strict: true });
+  const [a, b] = [PNG.sync.read(Buffer.from(gallery.image)), PNG.sync.read(Buffer.from(kit.image))];
+  assert.deepEqual([a.width, a.height], [b.width, b.height]);
+  // the template's image is transparent around the card; the gallery's sits on paper: compare where the card is
+  let differing = 0;
+  for (let i = 0; i < b.data.length; i += 4) {
+    if (b.data[i + 3] === 255 && [0, 1, 2].some((k) => Math.abs(a.data[i + k] - b.data[i + k]) > 2)) differing++;
+  }
+  assert.equal(differing, 0, `${differing} pixels differ from the card-image template's`);
 });
