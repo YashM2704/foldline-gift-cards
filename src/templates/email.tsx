@@ -44,6 +44,8 @@ export default template({
     const balanceUrl = href(v.balanceUrl);
     const printUrl = href(v.printUrl);
     const card = frameSize("drop");
+    // the sender opens the heading and the preheader: "the Okafor family" starts them as "The Okafor family"
+    const lead = v.from.charAt(0).toLocaleUpperCase("en") + v.from.slice(1);
     const detail = (label: string, content: ReactNode) => (
       <TableRow>
         <TableCell style={{ width: 120, color: QUIET }}>{label}</TableCell>
@@ -52,14 +54,15 @@ export default template({
     );
     return (
       <Email theme={theme} width={600} fonts={FONTS} lang="en" title={`${v.to}, ${v.from} sent you a gift`}
-        previewText={show ? `${v.from} sent you a ${value} gift card. Your code is inside.` : `${v.from} sent you a gift card. Your code is inside.`}>
+        previewText={show ? `${lead} sent you a ${value} gift card. Your code is inside.` : `${lead} sent you a gift card. Your code is inside.`}>
         <Section style={{ padding: [32, 32, 0, 32] }}>
           <Text style={{ fontFamily: STACK.serif, fontSize: 22, fontWeight: 600, letterSpacing: -0.3 }}>{shop.name}</Text>
         </Section>
         <Section style={{ padding: [24, 32, 32, 32], gap: 22 }}>
           <Column style={{ gap: 8 }}>
             <Text style={{ apply: ["eyebrow"] }}>{v.to},</Text>
-            <Heading level={1}>{v.from} sent you a gift</Heading>
+            {/* no-break spaces keep "sent you a gift" whole: a long name breaks before it, never "gift" alone */}
+            <Heading level={1}>{lead} sent&nbsp;you&nbsp;a&nbsp;gift</Heading>
           </Column>
           <Image src={{ src: href(v.cardImageUrl) ?? "card-drop.png", width: card.width, height: card.height }} alt={show ? `${value} ${shop.name} gift card for ${v.to}` : `${shop.name} gift card for ${v.to}`} style={{ width: CONTENT }} />
           {v.message && (

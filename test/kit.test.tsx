@@ -109,6 +109,10 @@ test("showAmount off: the email carries the value nowhere — preheader, alt tex
     assert.ok(!r.text.includes(s), `text shows ${s}`);
   }
   assert.match(r.html, /Arjun sent you a gift card\. Your code is inside\./);
+  // a sender written in lower case still starts the heading and the preheader with a capital
+  const okafor = (await render(snap(emailTemplate, { ...hidden, from: "the Okafor family" }))).html;
+  assert.match(okafor, /The Okafor family sent you a gift card\. Your code is inside\./);
+  assert.match(okafor, />The Okafor family sent(\xA0|&nbsp;|&#160;)you(\xA0|&nbsp;|&#160;)a(\xA0|&nbsp;|&#160;)gift</);
   const shown = await render(snap(emailTemplate, example));
   assert.match(shown.html, /₹2,500 Foldline gift card for Priya/);
 });
