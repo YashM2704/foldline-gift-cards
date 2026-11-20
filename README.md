@@ -2,6 +2,8 @@
 
 **One gift's values become its whole set: the card, the delivery email, the balance page, a card to print and fold, and images to share.** Five [Hyper Elements](https://github.com/hyper-elements/hyper-elements) templates share one set of typed fields, one card component and one brand.
 
+**Live preview:** [yashm2704.github.io/foldline-gift-cards](https://yashm2704.github.io/foldline-gift-cards/). Five gifts, each with its card, email, balance page, printable card and share images, in the browser.
+
 ![The Foldline gift card kit: the printable fold-in card, the delivery email, the balance page and a share image, all from one gift](docs/hero.png)
 
 Foldline is a fictional paper shop, and every gift card it sells is a piece of folded paper. Each occasion has its own origami: party hats and a water-bomb balloon for a birthday, tulips for thank you, paper lanterns for the festive season, a paper plane for congratulations, cranes for no reason at all. The card's corner is folded along an off-axis crease, the same fold as the shop's mark. The printable card really folds: print it double-sided, fold it once, and it's an A5 greeting card with the gift card inside.
@@ -192,6 +194,8 @@ Open `card.pdf` and print it double-sided, flipped on the short edge, at actual 
 - every text colour against its background meets WCAG AA contrast (4.5:1);
 - the gallery's one-file card draws exactly the card the template draws.
 
+On every push, [GitHub Actions](.github/workflows/pages.yml) runs the type check, `hyper-elements check` and the tests on Linux, then builds the live preview from the source and publishes it.
+
 The email was previewed in Outlook, Outlook.com, Gmail and Apple Mail, light and dark, with `hyper-elements preview`. The rendered files come out byte-identical on Windows and Linux, and on Node 22, 24 and 26.
 
 ## Scripts
@@ -205,6 +209,7 @@ The email was previewed in Outlook, Outlook.com, Gmail and Apple Mail, light and
 | `npm run typecheck` | TypeScript |
 | `npm run screenshots` | Screenshots of each email and balance page at desktop and phone widths (needs Chrome or Edge installed) |
 | `npm run docs` | The pictures in `docs/`, made from `out/`; the hero is itself a Hyper Elements `Canvas` (needs Chrome or Edge) |
+| `npm run site` | The live preview in `site/`: every gift's set, and an index that is itself a Hyper Elements `Page` |
 | `npm run metrics` | Re-measures the fonts into `src/metrics.json` |
 
 ## Project structure
@@ -221,7 +226,8 @@ src/
   format.ts    dates, short links, a gift's shop
 gallery/       foldline-gift-card.tsx                      the card in one file, as the official gallery's templates are
 gifts/         five example gifts
-scripts/       render · screenshots · docs · metrics
+scripts/       render · site · outputs · screenshots · docs · metrics
+.github/       the workflow that tests and publishes the live preview
 test/          kit.test.tsx
 ```
 
