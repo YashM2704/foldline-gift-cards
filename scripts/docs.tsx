@@ -63,10 +63,11 @@ await mkdir(crops, { recursive: true });
 await shoot(join("out", GIFTS.birthday, "email.html"), 680, 2, join(DOCS, "email.png"));
 await shoot(join("out", GIFTS.justBecause, "email.html"), 375, 2, join(DOCS, "email-phone.png"));
 await shoot(join("out", GIFTS.birthday, "page.html"), 1200, 1, join(DOCS, "page.png"));
-await shoot(join("out", GIFTS.birthday, "page.html"), 390, 2, join(DOCS, "page-phone.png"));
+await shoot(join("out", GIFTS.birthday, "page.html"), 375, 2, join(DOCS, "page-phone.png"));
 // for the hero: the top of each, exactly the 330 × 980 they're shown at
 await shoot(join("out", GIFTS.justBecause, "email.html"), 375, 2, join(crops, "email.png"), Math.round((980 * 375) / 330));
-await shoot(join("out", GIFTS.birthday, "page.html"), 390, 2, join(crops, "page.png"), Math.round((980 * 390) / 330));
+// the page ends in the gap after the first how-to card (it ends at 1134 and the next starts at 1150), not across one
+await shoot(join("out", GIFTS.birthday, "page.html"), 390, 2, join(crops, "page.png"), 1142);
 {
   const checked = fold.check(await gift(GIFTS.birthday), { format: "a4" });
   const { html } = await render((checked.snapshots as Record<string, unknown>).a4 as never);
@@ -103,7 +104,7 @@ await browser.close();
   await writeFile(join(DOCS, "occasions.gif"), gif.bytes());
 }
 
-// 4. the hero: the whole set for one gift, laid out by Hyper Elements itself
+// 4. the hero: the kit's outputs from its example gifts, laid out by Hyper Elements itself
 {
   const files = {
     fold: join(DOCS, "fold-inside.png"), email: join(crops, "email.png"), story: join(DOCS, "share-story.png"), page: join(crops, "page.png"),

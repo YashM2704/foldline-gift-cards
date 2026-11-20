@@ -2,11 +2,11 @@
 
 **One gift's values become its whole set: the card, the delivery email, the balance page, a card to print and fold, and images to share.** Five [Hyper Elements](https://github.com/hyper-elements/hyper-elements) templates share one set of typed fields, one card component and one brand.
 
-**Live preview:** [yashm2704.github.io/foldline-gift-cards](https://yashm2704.github.io/foldline-gift-cards/). Five gifts, each with its card, email, balance page, printable card and share images, in the browser.
+**Live preview:** [yashm2704.github.io/foldline-gift-cards](https://yashm2704.github.io/foldline-gift-cards/). Five gifts, each with its card, email, balance page, printable card and share images, in the browser, and the balance page when a card is all spent or expired.
 
-![The Foldline gift card kit: the printable fold-in card, the delivery email, the balance page and a share image, all from one gift](docs/hero.png)
+![The Foldline gift card kit: the printable fold-in card, the delivery email, the balance page and a share image, from the kit's example gifts](docs/hero.png)
 
-Foldline is a fictional paper shop, and every gift card it sells is a piece of folded paper. Each occasion has its own origami: party hats and a water-bomb balloon for a birthday, tulips for thank you, paper lanterns for the festive season, a paper plane for congratulations, cranes for no reason at all. The card's corner is folded along an off-axis crease, the same fold as the shop's mark. The printable card really folds: print it double-sided, fold it once, and it's an A5 greeting card with the gift card inside.
+Foldline is a fictional paper shop, and every gift card it sells is a piece of folded paper. Each occasion has its own origami: party hats and a water-bomb balloon for a birthday, tulips for thank you, paper lanterns for the festive season, a paper plane for congratulations, cranes for no reason at all. The card's corner is folded along an off-axis crease, the same fold as the shop's mark. The printable card really folds: print it double-sided, fold it once, and it's an A5 greeting card (half-letter on US Letter) with the gift card inside.
 
 ![The five occasions: birthday, thanks, festive, congratulations and just because](docs/occasions.gif)
 
@@ -108,7 +108,7 @@ The templates use template formats for sizes: `even`, `flush` and `drop` for the
 The card is one component ([`src/parts/Card.tsx`](src/parts/Card.tsx)) built from `Layer`, `Svg` shapes and a clipped `Column`. The same component is drawn by three roots, and the email embeds it as an image:
 
 - **`Canvas`** for the card image and share images, written with `renderImage()`. The email embeds the card image.
-- **`Page`** for the balance page, with the card's value hidden so the balance is the only number on the page.
+- **`Page`** for the balance page, with the card's value hidden, so the card doesn't show a second figure beside the balance.
 - **`Document`** for the fold-in card, written with `renderPdf()`: two `Document.Page`s, with a QR code drawn as one `Svg` path.
 
 The origami is data: polygons, circles and curves in [`src/art/`](src/art). Each piece is drawn twice, once as its shadow and once in its colours, and a string's lanterns hang exactly where they meet its curve.
@@ -118,7 +118,7 @@ The email and the page share one `defineTheme()` ([`src/brand.ts`](src/brand.ts)
 ### Rules, so nothing breaks
 
 - Fields carry their rules: `maxLength`, `pattern` (the characters the fonts can draw, the gift-code alphabet), `min` and `max`.
-- What a pattern can't express, a template's `render` refuses, so `check()` reports it as an error. Examples: a name too wide for the card, an emoji in a message, a note that can't fit a share image. [`problems()`](src/fields.ts) gives the same rules as sentences a shop can show.
+- What a pattern can't express, a template's `render` refuses, so `check()` reports it as an error. Examples: a name too wide for the card, an emoji in a message, a note that can't fit a share image. [`problems()`](src/fields.ts) gives the same rules as sentences a shop can show, all but the last: whether a note fits a share image depends on the image's layout, so the share template's check reports it, also as a sentence.
 - The image templates require the core rules `image/overflow` and `image/glyph`, and every image is rendered `strict`: a missing glyph or anything past the canvas is an error, not a warning.
 
 ### Text, measured
@@ -130,6 +130,8 @@ Every size and line break on the card, the PDF and the share images is decided b
 - **Notes:** a note takes the largest size that fits: from 44px down on the square share image, from 56px on the story, from 40px in the printed card. On the share images, if it still doesn't fit, the card shrinks; a note is never cut.
 - **Line breaks:** on images and PDFs the template sets every line break itself, at spaces only, because the renderer may break a line wherever the font changes, even mid-word. One-letter words stay with the next word, and widows are avoided.
 
+Why not Hyper Elements' own `fit`? It sizes text in a `Canvas` only, and the card is drawn in a `Page` and a `Document` too. The share image also sizes the card and the note together, and the image renderer may break a line where its font file changes. So the kit measures once and sets every line itself, and `image/overflow` with strict renders checks the result.
+
 Each font weight is a single TrueType file from fonts.gstatic.com holding Latin, Latin Extended-A and ₹ together with its kerning. It goes in each root's `fonts` prop, as the official gallery's templates do, so a word never changes font file part-way. Hindi names and notes are set in Martel.
 
 ### The CLI
@@ -137,10 +139,11 @@ Each font weight is a single TrueType file from fonts.gstatic.com holding Latin,
 ```bash
 npm run check      # hyper-elements check: all five templates, every format, with their examples, and the gallery file
 npm run describe   # hyper-elements describe: the card template's formats, fields, guidance and rules
-npx hyper-elements preview out/priya-birthday/email.html --findings   # the email in Outlook, Gmail, Apple Mail
+npx hyper-elements preview src/templates/email.tsx       # the email template: what each email client changes
+npx hyper-elements preview out/priya-birthday/email.html # a rendered email, drawn as Outlook, Gmail and Apple Mail draw it, in out/clients/
 ```
 
-`package.json` lists the templates as trusted (`"hyperElements": { "templates": ["src/**"] }`).
+`package.json` lists the templates as trusted (`"hyperElements": { "templates": ["src/**"] }`). A gift is one set of values for all five templates, so `gifts/*.json` are plain values files that [`scripts/render.ts`](scripts/render.ts) checks against every template, rather than `design new` values files, which name one template each.
 
 ```
 Gift card image (foldline.GiftCardImage 1.0.0, a Canvas): The gift card's face as a PNG: origami art for the occasion, the greeting, the amount, a folded corner.
@@ -173,7 +176,7 @@ The email shows the card image by `cardImageUrl`. Rendered locally, it points at
 
 ### A new occasion
 
-Add a palette and greeting to `OCCASIONS` in [`src/brand.ts`](src/brand.ts), and a composition to [`src/art/compose.ts`](src/art/compose.ts) built from the pieces in [`src/art/pieces.ts`](src/art/pieces.ts). The art lives in the right 45% of the card and keeps clear of the text and the folded corner.
+Add its name to `Occasion` and `OCCASIONS_LIST` in [`src/brand.ts`](src/brand.ts), a palette and greeting to `OCCASIONS` there, and a composition to [`src/art/compose.ts`](src/art/compose.ts) built from the pieces in [`src/art/pieces.ts`](src/art/pieces.ts). The art lives in the right 45% of the card and keeps clear of the text and the folded corner.
 
 ### One file, in the gallery's shape
 
