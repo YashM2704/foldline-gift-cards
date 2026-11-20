@@ -38,7 +38,7 @@ const gifts: Array<{ name: string; v: Values }> = [];
 for (const name of names) {
   const gift: Values = JSON.parse(await readFile(join("gifts", `${name}.json`), "utf8"));
   // the links a reader can follow here: the gift's own balance page and printable card, beside its email
-  const v = { ...gift, balanceUrl: "page.html", printUrl: "card.pdf" };
+  const v: Values = { ...gift, balanceUrl: "page.html", printUrl: "card.pdf" };
   const { ready, found, invalid, jobs } = plan(v);
   if (!ready) {
     console.log(`✗ ${name}`);
@@ -52,6 +52,29 @@ for (const name of names) {
     if (problems(w.diagnostics).length) {
       console.log(`✗ ${name}/${w.file}:\n${formatDiagnostics(problems(w.diagnostics))}`);
       process.exit(1);
+    }
+  }
+  // the balance page's other states, shown with the first gift: its last ₹800 spent, and the day after it expires
+  if (name === FIRST) {
+    const states = {
+      spent: { ...v, balance: 0, history: [{ date: "2026-11-16", label: "Order #1077", amount: -v.balance }, ...v.history] },
+      expired: { ...v, asOf: "2027-11-19" },
+    };
+    for (const [state, values] of Object.entries(states)) {
+      const { ready, found, invalid, jobs } = plan(values);
+      const job = jobs.find((j) => j.file === "page.html");
+      if (!ready || !job) {
+        console.log(`✗ ${name}, ${state}`);
+        for (const p of found) console.log(`    ${p.field}: ${p.message}`);
+        for (const j of invalid) console.log(`    ${j.file}:\n${formatDiagnostics(j.checked.diagnostics)}`);
+        process.exit(1);
+      }
+      for (const w of await draw([{ ...job, file: `page-${state}.html` }], dir, fonts, writeFile)) {
+        if (problems(w.diagnostics).length) {
+          console.log(`✗ ${name}/${w.file}:\n${formatDiagnostics(problems(w.diagnostics))}`);
+          process.exit(1);
+        }
+      }
     }
   }
   gifts.push({ name, v });
@@ -73,7 +96,7 @@ function Gift({ name, v }: { name: string; v: Values }) {
   const link = (text: string, file: string) => <Link href={at(file)}>{text}</Link>;
   return (
     <Row style={{ gap: 32, alignItems: "center", padding: [24, 0], border: { top: `1px solid ${RULE}` }, mobile: { gap: 16 } }}>
-      <Column style={{ width: thumb.width, flex: "none", mobile: { width: "100%" as never } }}>
+      <Column style={{ width: thumb.width, flex: "none", mobile: { width: "100%" } }}>
         <Link href={at("card-even.png")}>
           <Image src={{ src: at("card-even.png"), width: 1084, height: 710 }} alt={`${o.greet}, ${v.to}: the card`} style={{ width: thumb.width }} />
         </Link>
@@ -88,6 +111,8 @@ function Gift({ name, v }: { name: string; v: Values }) {
           <Text>
             {link(`The card to print (PDF, ${v.locale === "en-US" ? "Letter" : "A4"})`, "card.pdf")} · Share images: {link("square", "share-square.png")}, {link("story", "share-story.png")}
           </Text>
+          <Text>The card image: {link("even", "card-even.png")}, {link("flush", "card-flush.png")}, {link("drop", "card-drop.png")}</Text>
+          {name === FIRST && <Text>The balance page, {link("all spent", "page-spent.html")} · {link("expired", "page-expired.html")}</Text>}
         </Column>
       </Column>
     </Row>
@@ -107,7 +132,7 @@ const index = (
       </Row>
     </Section>
     <Section style={{ padding: [48, 32, 24, 32], gap: 16, mobile: { padding: [28, 20, 16, 20] } }}>
-      <Text style={label}>A gift card kit built with Hyper Elements</Text>
+      <Text style={label}>Gift card kit · Hyper Elements</Text>
       <Heading level={1} style={{ fontFamily: STACK.serif, fontSize: 44, mobile: { fontSize: 34 } }}>One gift, its whole set</Heading>
       <Text style={{ fontSize: 18, maxWidth: 680 }}>
         Each gift below is one JSON file. Five templates turn it into a card image, a delivery email, a balance page, a card to print and
