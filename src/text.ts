@@ -121,7 +121,7 @@ export function nameProblem(name: string): string | null {
 
 /** A shop name must fit the wordmark's 400px at 24px. */
 export function shopProblem(shop: string): string | null {
-  if (measure(shop, "fraunces-600", 24) > 400) return `“${shop}” is too long for the wordmark: use a logo, or a shorter name.`;
+  if (measure(shop, "fraunces-600", 24) > 400) return `“${shop}” is too long for the wordmark: use a shorter name.`;
   return unprintable(shop);
 }
 

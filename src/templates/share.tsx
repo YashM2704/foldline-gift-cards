@@ -25,6 +25,8 @@ const FORMAT = {
 } as const;
 type Format = keyof typeof FORMAT;
 const GAP = 36, LEADING = 1.35, DROP = 34;
+/** The space between the note and its signature grows with the note's size (10px at 28px, 20px at 56px). */
+const signGap = (size: number) => Math.max(10, Math.round(size * 0.35));
 
 /** "A gift from {from}": one line from the format's largest size down to its floor; else a lead-in line, then the
  *  name on its own line, fitted down to 28px. Null if even that won't fit the column. */
@@ -58,7 +60,9 @@ export function layout(v: { from: string; message?: string }, format: Format) {
     { shares: [0.65, 0.6, 0.55, 0.5], sizes: steps(largest, smallest), fullSheet: false },
     { shares: [0.8, 0.7, 0.6, 0.5], sizes: steps(largest, smallest), fullSheet: true },
   ];
+  // the signature's line, with the 10px under the note it always has; signGap adds the rest for a larger note
   const fromH = f.from * 1.5;
+  const lift = (size: number) => signGap(size) - 10;
   const NOTE_PAD = f.notePad;
   for (const pass of passes) {
     for (const share of pass.shares) {
@@ -76,11 +80,11 @@ export function layout(v: { from: string; message?: string }, format: Format) {
       // the largest size that fits beside a card this size, preferring one that leaves no widow
       const fit = preferNoWidow(
         pass.sizes.map((size) => {
-          const maxLines = Math.floor((room - 2 * NOTE_PAD - fromH) / (size * LEADING));
+          const maxLines = Math.floor((room - 2 * NOTE_PAD - fromH - lift(size)) / (size * LEADING));
           return maxLines > 0 ? fitWrapped(message, "fraunces-400i", width - 2 * NOTE_PAD, [size], maxLines) : null;
         }),
       );
-      if (fit) return { ...base, note: { size: fit.size, lines: fit.lines, height: Math.ceil(2 * NOTE_PAD + fromH + fit.lines.length * fit.size * LEADING) } };
+      if (fit) return { ...base, note: { size: fit.size, lines: fit.lines, height: Math.ceil(2 * NOTE_PAD + fromH + lift(fit.size) + fit.lines.length * fit.size * LEADING) } };
     }
   }
   return null;
@@ -97,7 +101,7 @@ function Note({ width, height, size, lines, from, fromSize, pad, background }: {
         <Polygon points={`${width - F},0 ${width},${F} ${width - F},${F}`} style={{ fill: mix(background, INK, 0.1) }} />
         <Line x1={width - F} y1={0} x2={width} y2={F} style={{ stroke: INK, strokeWidth: 1, opacity: 0.3 }} />
       </Svg>
-      <Column style={{ width, height, padding: pad, gap: 10, color: INK }}>
+      <Column style={{ width, height, padding: pad, gap: signGap(size), color: INK }}>
         <Text style={{ fontFamily: "Fraunces", fontStyle: "italic", fontWeight: 400, fontSize: size, lineHeight: LEADING }}><Lines lines={lines} /></Text>
         <Text style={{ fontSize: fromSize, fontWeight: 500 }}><Lines lines={[`— ${from}`]} family="Instrument Sans" /></Text>
       </Column>

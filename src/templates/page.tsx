@@ -17,7 +17,9 @@ import { Mark } from "../parts/Mark";
 import { Qr } from "../parts/Qr";
 import { money } from "../text";
 
-const DESKTOP_CARD = 440, PHONE_CARD = 336; // 336 fits a 375px phone's column; centred on wider ones
+// The card's art has fixed sizes: 336 fits a 375px phone's column exactly, and on wider phones it sits at the left,
+// a little short of the column (14px at 390px).
+const DESKTOP_CARD = 440, PHONE_CARD = 336;
 
 /** For galleries and tools that list designs, as the official gallery's files do. */
 export const meta = {
@@ -68,7 +70,7 @@ export default template({
         <Section style={{ padding: [48, 32, 40, 32], gap: 48, mobile: { padding: [28, 20], gap: 32 } }}>
           {/* the card and its balance; on phones the card comes first, smaller */}
           <Row style={{ gap: 48, alignItems: "center" }}>
-            <Column style={{ width: frameSize("drop", DESKTOP_CARD).width, alignItems: "center", mobile: { width: "100%" as never } }}>
+            <Column style={{ width: frameSize("drop", DESKTOP_CARD).width, alignItems: "center", mobile: { width: "100%" } }}>
               <Column hidden={{ mobile: true }}>{card(DESKTOP_CARD)}</Column>
               <Column hidden={{ desktop: true }}>{card(PHONE_CARD)}</Column>
             </Column>
@@ -87,7 +89,7 @@ export default template({
                   </Column>
                   {/* the bar: what's left, on a track the colour of a rule; a sliver shows while anything is */}
                   <Row stackOnMobile={false} style={{ height: 10, backgroundColor: mix(PAPER, QUIET, 0.35), borderRadius: 5, overflow: "hidden" }}>
-                    {fill > 0 && <Column style={{ width: `${Math.max(2, Math.round(fill * 100))}%` as never, height: 10, backgroundColor: INK }} />}
+                    {fill > 0 && <Column style={{ width: `${Math.max(2, Math.round(fill * 100))}%` as const, height: 10, backgroundColor: INK }} />}
                   </Row>
                   <Text style={{ fontSize: 14, color: QUIET }}>{spent ? `All spent. It's been a pleasure.` : `Expires ${date(v.expires, v.locale)}`}</Text>
                   <Column style={{ backgroundColor: WHITE, border: `1.5px dashed ${QUIET}`, borderRadius: 8, padding: [12, 16], gap: 2 }}>

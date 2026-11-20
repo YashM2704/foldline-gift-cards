@@ -50,6 +50,7 @@ export default template({
   formats: { a4: { size: "A4", orientation: "landscape" }, letter: { size: "Letter", orientation: "landscape" } },
   fields,
   example,
+  rules: { root: { lang: true } },
   render(v, { format }) {
     assertPrintable(v);
     const paper = PAPERS[format];
@@ -142,8 +143,8 @@ export default template({
               <Row style={{ width: contentW, gap: 14, alignItems: "center" }}>
                 <Qr value={redeem} size={mm(26)} color={INK} title={`A QR code that opens ${shortUrl(redeem)}`} />
                 <Column style={{ gap: 4 }}>
-                  <Text style={{ fontSize: 12.5 }}>{`1  Scan, or go to ${shortUrl(redeem)}`}</Text>
-                  <Text style={{ fontSize: 12.5 }}>2  Enter the code at checkout</Text>
+                  <Text style={{ fontSize: 12.5 }}>{`1 · Scan, or go to ${shortUrl(redeem)}`}</Text>
+                  <Text style={{ fontSize: 12.5 }}>2 · Enter the code at checkout</Text>
                   <Text style={{ fontSize: 12.5, color: QUIET }}>{`Use by ${date(v.expires, v.locale)}`}</Text>
                 </Column>
               </Row>
