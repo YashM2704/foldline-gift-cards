@@ -1,11 +1,6 @@
 /**
- * Renders gifts: each JSON file in gifts/ (or the ones named) becomes out/<gift>/, its whole set:
- *
- *   card-even.png · card-flush.png · card-drop.png    the card face
- *   share-square.png · share-story.png                 to post
- *   email.html · email.txt                             the delivery email (it embeds card-drop.png)
- *   page.html                                          the balance page
- *   card.pdf                                           the printable fold-in card (Letter for en-US, else A4)
+ * Renders gifts: each JSON file in gifts/ (or the ones named) becomes out/<gift>/, its whole set (see outputs.ts):
+ * the card face in three frames, two share images, the email (HTML and text), the balance page and the PDF.
  *
  *   npm run render                      every gift
  *   npm run render -- priya-birthday    one gift
@@ -15,33 +10,9 @@
  */
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { formatDiagnostics, render, type Diagnostic } from "@hyper-elements/react";
-import { renderImage } from "@hyper-elements/react/image";
-import { renderPdf } from "@hyper-elements/react/pdf";
-import type { Template } from "@hyper-elements/react/template";
-import { problems } from "../src/fields";
+import { formatDiagnostics, type Diagnostic } from "@hyper-elements/react";
 import { loadFonts } from "../src/fonts";
-import cardImage from "../src/templates/card-image";
-import email from "../src/templates/email";
-import fold from "../src/templates/fold";
-import page from "../src/templates/page";
-import share from "../src/templates/share";
-
-/** A gift file: untyped JSON, checked by problems() and by every template before anything is drawn. */
-type Values = Record<string, any>;
-interface Output {
-  template: Template<any, any>;
-  /** The formats to render, and each one's file name. */
-  files: (v: Values) => Array<{ format?: string; file: string }>;
-  kind: "png" | "pdf" | "html";
-}
-const OUTPUTS: Output[] = [
-  { template: cardImage, kind: "png", files: () => ["even", "flush", "drop"].map((format) => ({ format, file: `card-${format}.png` })) },
-  { template: share, kind: "png", files: () => ["square", "story"].map((format) => ({ format, file: `share-${format}.png` })) },
-  { template: email, kind: "html", files: () => [{ file: "email.html" }] },
-  { template: page, kind: "html", files: () => [{ file: "page.html" }] },
-  { template: fold, kind: "pdf", files: (v) => [{ format: v.locale === "en-US" ? "letter" : "a4", file: "card.pdf" }] },
-];
+import { draw, plan, type Values } from "./outputs";
 
 /**
  * Writes a file, or stops with a sentence when it can't: on Windows a PDF or an image left open in another program
@@ -78,12 +49,8 @@ const warnings = (d: Diagnostic[]) => d.filter((x) => x.severity !== "info");
 
 for (const gift of gifts) {
   const values: Values = JSON.parse(await readFile(join("gifts", `${gift}.json`), "utf8"));
-  // the rules a shop can read first, then every template's own check of every format: all of it before any file
-  const found = problems(values);
-  const jobs = OUTPUTS.flatMap((out) => out.files(values).map(({ format, file }) => ({ out, format, file, checked: out.template.check(values, format ? { format } : undefined) })));
-  const snapshotOf = (j: (typeof jobs)[number]) => (j.checked.snapshots as Record<string, unknown>)[j.format ?? "default"];
-  const invalid = jobs.filter((j) => !j.checked.valid || !snapshotOf(j));
-  if (found.length || invalid.length) {
+  const { ready, found, invalid, jobs } = plan(values);
+  if (!ready) {
     failed.push(gift);
     console.log(`✗ ${gift}`);
     for (const p of found) console.log(`    ${p.field}: ${p.message}`);
@@ -92,32 +59,8 @@ for (const gift of gifts) {
   }
   const dir = join("out", gift);
   await mkdir(dir, { recursive: true });
-  const written: string[] = [];
-  for (const j of jobs) {
-    const snapshot = snapshotOf(j) as never;
-    let diagnostics: Diagnostic[] = [];
-    if (j.out.kind === "png") {
-      const r = await renderImage(snapshot, { fonts, strict: true });
-      await write(join(dir, j.file), r.image);
-      diagnostics = r.diagnostics;
-    } else if (j.out.kind === "pdf") {
-      const r = await renderPdf(snapshot, { fonts });
-      await write(join(dir, j.file), r.pdf);
-      diagnostics = r.diagnostics;
-    } else {
-      const r = await render(snapshot);
-      const isEmail = j.out.template === email;
-      await write(join(dir, j.file), r.html);
-      if (isEmail) {
-        const text = j.file.replace(/\.html$/, ".txt");
-        await write(join(dir, text), r.text);
-        written.push(text);
-      }
-      diagnostics = r.diagnostics;
-    }
-    written.push(j.file);
-    if (warnings(diagnostics).length) console.log(`    ${j.file}:\n${formatDiagnostics(warnings(diagnostics))}`);
-  }
+  const written = await draw(jobs, dir, fonts, write);
+  for (const w of written) if (warnings(w.diagnostics).length) console.log(`    ${w.file}:\n${formatDiagnostics(warnings(w.diagnostics))}`);
   console.log(`✓ ${gift.padEnd(20)} ${written.length} files`);
 }
 if (failed.length) {

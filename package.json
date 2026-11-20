@@ -16,7 +16,8 @@
     "typecheck": "tsc --noEmit",
     "metrics": "tsx scripts/metrics.ts",
     "screenshots": "tsx scripts/screenshots.ts",
-    "docs": "tsx scripts/docs.tsx"
+    "docs": "tsx scripts/docs.tsx",
+    "site": "tsx scripts/site.tsx"
   },
   "hyperElements": {
     "templates": [
