@@ -6,20 +6,27 @@
  *
  * In the preview a gift's balance and print links open its own page and PDF. Redeem and the shop's links go to
  * foldline.example: Foldline is a fictional shop.
+ *
+ * Each gift's email also goes to Unlayer's builder: toDesign() turns it into the builder's design JSON
+ * (email.design.json), and builder.html opens that design in Unlayer's embedded editor.
  */
 import { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { Column, formatDiagnostics, Heading, Image, Link, Page, render, Row, Section, Text, type Diagnostic } from "@hyper-elements/react";
+import { toDesign } from "@hyper-elements/react/builder";
 import { mix } from "../src/art/shapes";
-import { INK, OCCASIONS, PAPER, QUIET, RULE, theme } from "../src/brand";
-import { FONTS, loadFonts, STACK } from "../src/fonts";
+import { INK, OCCASIONS, PAPER, QUIET, RULE, theme, WHITE } from "../src/brand";
+import { FACES, FONTS, loadFonts, STACK } from "../src/fonts";
 import { frameSize } from "../src/parts/Card";
-import { Mark } from "../src/parts/Mark";
+import { Mark, points, reflect } from "../src/parts/Mark";
+import email from "../src/templates/email";
 import { money } from "../src/text";
 import { draw, plan, type Values } from "./outputs";
 
 const OUT = "site";
 const REPO = "https://github.com/YashM2704/foldline-gift-cards";
+/** Where the preview is published: the builder's editor runs on Unlayer's site, so its links and image are absolute. */
+const SITE = "https://yashm2704.github.io/foldline-gift-cards/";
 /** Priya's gift first: it's every template's example. */
 const FIRST = "priya-birthday";
 const problems = (d: Diagnostic[]) => d.filter((x) => x.severity !== "info");
@@ -77,8 +84,63 @@ for (const name of names) {
       }
     }
   }
+  // the email in Unlayer's builder: its design JSON, and a page that opens it in the builder's editor
+  const at = (file: string) => `${SITE}${name}/${file}`;
+  const linked: Values = { ...v, cardImageUrl: at("card-drop.png"), balanceUrl: at("page.html"), printUrl: at("card.pdf") };
+  const { design, report } = toDesign(email.design(linked as Parameters<typeof email.design>[0]));
+  await writeFile(join(dir, "email.design.json"), JSON.stringify(design, null, 1));
+  await writeFile(join(dir, "builder.html"), builderPage(v, design, report));
   gifts.push({ name, v });
-  console.log(`✓ ${name}`);
+  console.log(`✓ ${name}${report.length ? ` (the builder: ${report.length} notes)` : ""}`);
+}
+
+/** A page that opens a gift's email in Unlayer's embedded editor, with a header in the kit's own colours and type. */
+function builderPage(v: Values, design: unknown, report: string[]) {
+  const o = OCCASIONS[v.occasion as keyof typeof OCCASIONS];
+  const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const faces = FACES.filter((f) => f.family !== "Martel")
+    .map((f) => `@font-face{font-family:"${f.family}";src:url("${f.src}") format("truetype");font-weight:${f.weight};font-style:${f.style}}`)
+    .join("");
+  const [a, b]: [[number, number], [number, number]] = [[12, 0], [30, 20]];
+  const mark = `<svg width="22" height="22" viewBox="0 0 30 30" aria-hidden="true"><polygon points="${points([[0, 0], a, b, [30, 30], [0, 30]])}" fill="${INK}"/><polygon points="${points([a, b, reflect([30, 0], a, b)])}" fill="${mix(INK, PAPER, 0.55)}"/></svg>`;
+  // what toDesign() said the builder holds differently, without the element paths
+  const notes = report.map((line) => `<li>${esc(line.replace(/^[^:]*: /, ""))}</li>`).join("");
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(`${o.greet}, ${v.to}: the email in Unlayer's builder · Foldline gift cards`)}</title>
+<style>${faces}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{display:flex;flex-direction:column;background:${PAPER};color:${INK};font:16px/1.5 "Instrument Sans",system-ui,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:8px 32px;align-items:baseline;padding:16px 24px;border-bottom:1px solid ${RULE}}
+.brand{display:flex;gap:10px;align-items:center;font:600 20px/1 Fraunces,Georgia,serif;color:${INK};text-decoration:none;align-self:center}
+h1{margin:0;font:italic 400 22px/1.3 Fraunces,Georgia,serif}
+p,details{margin:0;font-size:14px;color:${QUIET}}
+a{color:${INK}}code{font:600 13px "Red Hat Mono",monospace;background:${WHITE};border:1px solid ${RULE};border-radius:4px;padding:0 4px}
+summary{cursor:pointer}ul{margin:4px 0 0;padding-left:20px}
+#editor{flex:1;min-height:640px}
+.narrow{display:none}@media (max-width:700px){.narrow{display:block}}
+</style>
+</head>
+<body>
+<header>
+<a class="brand" href="../index.html">${mark}Foldline gift cards</a>
+<div>
+<h1>${esc(`${o.greet}, ${v.to}`)}: the email, in Unlayer's builder</h1>
+<p>The kit's email template, turned into the builder's design by Hyper Elements' <code>toDesign()</code>. Edit anything: nothing is saved.
+<a href="email.html">The email as sent</a> · <a href="email.design.json">The design JSON</a></p>
+<p class="narrow">The builder is made for a wider screen: on a phone, it shows the email but leaves little room to edit.</p>
+${report.length ? `<details><summary>What the builder holds differently (${report.length})</summary><ul>${notes}</ul></details>` : ""}
+</div>
+</header>
+<div id="editor"></div>
+<script src="https://editor.unlayer.com/embed.js"></script>
+<script>unlayer.createEditor({ id: "editor", displayMode: "email" }).loadDesign(${JSON.stringify(design).replace(/</g, "\\u003c")});</script>
+</body>
+</html>
+`;
 }
 await copyFile("docs/hero.png", join(OUT, "hero.png"));
 
@@ -112,6 +174,7 @@ function Gift({ name, v }: { name: string; v: Values }) {
             {link(`The card to print (PDF, ${v.locale === "en-US" ? "Letter" : "A4"})`, "card.pdf")} · Share images: {link("square", "share-square.png")}, {link("story", "share-story.png")}
           </Text>
           <Text>The card image: {link("even", "card-even.png")}, {link("flush", "card-flush.png")}, {link("drop", "card-drop.png")}</Text>
+          <Text>{link("The email in Unlayer's builder", "builder.html")}, editable ({link("its design JSON", "email.design.json")})</Text>
           {name === FIRST && <Text>The balance page, {link("all spent", "page-spent.html")} · {link("expired", "page-expired.html")}</Text>}
         </Column>
       </Column>
@@ -136,7 +199,8 @@ const index = (
       <Heading level={1} style={{ fontFamily: STACK.serif, fontSize: 44, mobile: { fontSize: 34 } }}>One gift, its whole set</Heading>
       <Text style={{ fontSize: 18, maxWidth: 680 }}>
         Each gift below is one JSON file. Five templates turn it into a card image, a delivery email, a balance page, a card to print and
-        fold, and images to share. Everything here was drawn by those templates, and this page is a Hyper Elements Page too.
+        fold, and images to share. Everything here was drawn by those templates, and this page is a Hyper Elements Page too. Each
+        email also opens in Unlayer's builder, turned into the builder's design by Hyper Elements.
       </Text>
     </Section>
     <Section style={{ padding: [8, 32, 32, 32], mobile: { padding: [8, 20, 24, 20] } }}>

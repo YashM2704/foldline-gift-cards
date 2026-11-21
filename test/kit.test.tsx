@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import { Canvas, Column, Document, Page, render } from "@hyper-elements/react";
 import { renderImage } from "@hyper-elements/react/image";
 import { renderPdf } from "@hyper-elements/react/pdf";
+import { fromDesign, toDesign } from "@hyper-elements/react/builder";
 import { example, problems } from "../src/fields";
 import { FONTS, loadFonts } from "../src/fonts";
 import { Card, layoutWords } from "../src/parts/Card";
@@ -90,7 +91,7 @@ const snap = (t: Template<any, any>, v: unknown, format?: string) => {
   return (r.snapshots as Record<string, unknown>)[format ?? "default"] as never;
 };
 
-test("every template checks its example in every format, and renders it without errors", async () => {
+test("every template checks its example in every format and renders it without errors; the email goes to Unlayer's builder and back", async () => {
   for (const format of ["square", "story"]) assert.deepEqual(errors((await renderImage(snap(share, example, format), { fonts, strict: true })).diagnostics), []);
   for (const format of ["a4", "letter"]) {
     const pdf = await renderPdf(snap(fold, example, format), { fonts });
@@ -99,6 +100,14 @@ test("every template checks its example in every format, and renders it without 
   }
   assert.deepEqual(errors((await render(snap(emailTemplate, example))).diagnostics), []);
   assert.deepEqual(errors((await render(snap(pageTemplate, example))).diagnostics), []);
+  // toDesign() makes the builder's design JSON; all it reports is the theme written into each block and the details
+  // table held as an HTML block. fromDesign() brings it back as a template that renders cleanly, every word in it.
+  const { design, report } = toDesign(emailTemplate.design(example));
+  assert.ok(report.length <= 2, report.join("\n"));
+  assert.ok(design.body.rows.length > 0);
+  const back = await render(fromDesign(design, { displayMode: "email" }).element);
+  assert.deepEqual(errors(back.diagnostics), []);
+  for (const s of [example.code, example.message!, "Redeem your gift", "Enter the code at checkout"]) assert.ok(back.text.includes(s), s);
 });
 
 test("showAmount off: the email carries the value nowhere — preheader, alt text, details, plain text", async () => {

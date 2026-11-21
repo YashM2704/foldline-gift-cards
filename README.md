@@ -2,7 +2,7 @@
 
 **One gift's values become its whole set: the card, the delivery email, the balance page, a card to print and fold, and images to share.** Five [Hyper Elements](https://github.com/hyper-elements/hyper-elements) templates share one set of typed fields, one card component and one brand.
 
-**Live preview:** [yashm2704.github.io/foldline-gift-cards](https://yashm2704.github.io/foldline-gift-cards/). Five gifts, each with its card, email, balance page, printable card and share images, in the browser, and the balance page when a card is all spent or expired.
+**Live preview:** [yashm2704.github.io/foldline-gift-cards](https://yashm2704.github.io/foldline-gift-cards/). Five gifts, each with its card, email, balance page, printable card and share images, in the browser, the balance page when a card is all spent or expired, and each email opened in Unlayer's builder.
 
 ![The Foldline gift card kit: the printable fold-in card, the delivery email, the balance page and a share image, from the kit's example gifts](docs/hero.png)
 
@@ -151,6 +151,12 @@ Gift card image (foldline.GiftCardImage 1.0.0, a Canvas): The gift card's face a
   formats: even 1084×710, flush 1042×672, drop 1012×672
 ```
 
+### Into Unlayer's builder
+
+`toDesign()` from `@hyper-elements/react/builder` turns the email into the design JSON of Unlayer's drag-and-drop builder, as the builder's own blocks: headings, paragraphs, the card image, the button and dividers. It reports the two things the builder holds differently: the theme is written into each block as its values, and the details table is an HTML block (it can be moved, not edited). `fromDesign()` turns the design back into a template: on a desktop it draws the email pixel for pixel as before; on a phone the builder keeps its own, narrower margins.
+
+The live preview opens each gift's email in Unlayer's embedded editor, for example [Priya's](https://yashm2704.github.io/foldline-gift-cards/priya-birthday/builder.html), with its design JSON beside it. A test checks the round trip.
+
 ## Make it yours
 
 ### The fields
@@ -190,7 +196,7 @@ Open `card.pdf` and print it double-sided, flipped on the short edge, at actual 
 
 `npm test` runs 17 tests, among them:
 
-- every template's example in every format, rendered without errors;
+- every template's example in every format, rendered without errors, and the email through Unlayer's builder and back;
 - the card in a `Canvas`, a `Page` and a `Document` for every occasion;
 - an edge-case matrix of twelve hard gifts through all nine outputs: the largest amounts in every currency, the longest names, a 238-character note and no note, Hindi, Polish, Turkish and Romanian, twenty history rows, spent and expired cards, and another shop;
 - with `showAmount` off, the email shows the value nowhere: not in the preheader, the alt text, the details or the plain text;
@@ -212,7 +218,7 @@ The email was previewed in Outlook, Outlook.com, Gmail and Apple Mail, light and
 | `npm run typecheck` | TypeScript |
 | `npm run screenshots` | Screenshots of each email and balance page at desktop and phone widths (needs Chrome or Edge installed) |
 | `npm run docs` | The pictures in `docs/`, made from `out/`; the hero is itself a Hyper Elements `Canvas` (needs Chrome or Edge) |
-| `npm run site` | The live preview in `site/`: every gift's set, and an index that is itself a Hyper Elements `Page` |
+| `npm run site` | The live preview in `site/`: every gift's set, its email in Unlayer's builder, and an index that is itself a Hyper Elements `Page` |
 | `npm run metrics` | Re-measures the fonts into `src/metrics.json` |
 
 ## Project structure
